@@ -1,4 +1,4 @@
-package com.chatop.ChatopApi.controller;
+package com.chatop.ChatopApi.exceptions;
 
 import com.chatop.ChatopApi.dto.response.BadRequestResponse;
 import com.chatop.ChatopApi.dto.response.SingleMessageResponse;
