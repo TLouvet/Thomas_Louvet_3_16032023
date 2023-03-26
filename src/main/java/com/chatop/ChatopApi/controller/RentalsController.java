@@ -59,7 +59,7 @@ public class RentalsController implements SecuredController {
             @ApiResponse(responseCode = "401", content = @Content)
     })
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
-    public SingleMessageResponse update(@PathVariable("id") final long id, @Valid @ModelAttribute UpdateRentalDto updateRentalDto){
-        return this.rentalsService.update(id, updateRentalDto);
+    public SingleMessageResponse update(@PathVariable("id") final long id, @Valid @ModelAttribute UpdateRentalDto updateRentalDto, Authentication authentication){
+        return this.rentalsService.update(id, updateRentalDto, authentication);
     }
 }

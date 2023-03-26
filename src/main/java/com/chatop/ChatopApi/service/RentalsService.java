@@ -12,8 +12,10 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.webjars.NotFoundException;
 
 @Service
@@ -54,27 +56,27 @@ public class RentalsService {
         return rentalResponse;
     }
 
-    public SingleMessageResponse create(CreateRentalDto rentalDto, Authentication principal){
-        User authorizedUser = (User) principal.getPrincipal();
-        long id = authorizedUser.getId();
+    public SingleMessageResponse create(CreateRentalDto rentalDto, Authentication authentication){
+        long userId = this.getAuthorizedUserId(authentication);
         String imagePath = this.fileStorageService.save(rentalDto.getPicture());
 
         Rental rental = this.modelMapper.map(rentalDto, Rental.class);
-        rental.setOwner_id(id);
+        rental.setOwner_id(userId);
         rental.setPicture(imagePath);
         this.rentalRepository.save(rental);
 
         return new SingleMessageResponse().setMessage("Rental created");
     }
 
-    public SingleMessageResponse update(final long id, UpdateRentalDto rentalDto){
+    public SingleMessageResponse update(final long id, UpdateRentalDto rentalDto, Authentication authentication){
         Rental dbRental = this.rentalRepository.findById(id).orElse(null);
         if (dbRental == null) {
             throw new NotFoundException("");
         }
+        this.verifyUserOwnership(authentication, dbRental.getOwner_id());
 
-        Rental rental = this.modelMapper.map(rentalDto, Rental.class);
-        this.rentalRepository.save(rental);
+        Rental updatedRental = this.mapUpdateData(dbRental, rentalDto);
+        this.rentalRepository.save(updatedRental);
 
         return new SingleMessageResponse().setMessage("Rental updated");
     }
@@ -86,4 +88,24 @@ public class RentalsService {
     private String formatImagePath(String imagePath){
         return getBaseImagePath() + imagePath;
     }
+
+    private long getAuthorizedUserId(Authentication authentication){
+        User authorizedUser = (User) authentication.getPrincipal();
+        return authorizedUser.getId();
+    }
+
+   private void verifyUserOwnership(Authentication authentication, long ownerId) throws HttpClientErrorException {
+       long userId = this.getAuthorizedUserId(authentication);
+       if (userId != ownerId){
+           throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
+       }
+   }
+
+   private Rental mapUpdateData(Rental dbRental, UpdateRentalDto rentalDto){
+       dbRental.setName(rentalDto.getName());
+       dbRental.setPrice(rentalDto.getPrice());
+       dbRental.setSurface(rentalDto.getSurface());
+       dbRental.setDescription(rentalDto.getDescription());
+       return dbRental;
+   }
 }

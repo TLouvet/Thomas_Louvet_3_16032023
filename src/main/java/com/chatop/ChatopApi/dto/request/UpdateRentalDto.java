@@ -3,9 +3,9 @@ package com.chatop.ChatopApi.dto.request;
 import lombok.Data;
 
 @Data
-public class UpdateRentalDto {
+public class UpdateRentalDto  {
     private String name;
-    private String surface;
-    private String price;
+    private double surface;
+    private double price;
     private String description;
 }

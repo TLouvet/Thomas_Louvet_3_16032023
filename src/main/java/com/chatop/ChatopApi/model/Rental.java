@@ -2,9 +2,11 @@ package com.chatop.ChatopApi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Data
 @Entity
+@DynamicUpdate
 @Table(name="rentals")
 public class Rental extends DbEntity{
 

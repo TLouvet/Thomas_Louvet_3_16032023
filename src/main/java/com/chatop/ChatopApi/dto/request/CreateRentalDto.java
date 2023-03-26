@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class CreateRentalDto {
+public class CreateRentalDto  {
 
     private String name;
 
@@ -15,5 +15,4 @@ public class CreateRentalDto {
     private MultipartFile picture;
 
     private String description;
-
 }
