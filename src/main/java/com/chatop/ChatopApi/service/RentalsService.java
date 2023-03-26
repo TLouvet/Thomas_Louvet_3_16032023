@@ -1,10 +1,17 @@
 package com.chatop.ChatopApi.service;
 
+import com.chatop.ChatopApi.dto.request.CreateRentalDto;
+import com.chatop.ChatopApi.dto.request.UpdateRentalDto;
+import com.chatop.ChatopApi.dto.response.RentalResponse;
+import com.chatop.ChatopApi.dto.response.RentalsResponse;
 import com.chatop.ChatopApi.dto.response.SingleMessageResponse;
 import com.chatop.ChatopApi.model.Rental;
 import com.chatop.ChatopApi.repository.RentalRepository;
 import com.chatop.ChatopApi.model.User;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
@@ -13,36 +20,70 @@ import org.webjars.NotFoundException;
 public class RentalsService {
 
     @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
     private RentalRepository rentalRepository;
 
-    public Iterable<Rental> getRentals(){
-        return this.rentalRepository.findAll();
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    @Value("${server.servlet.contextPath}")
+    private String contextPath;
+
+    @Value("${server.host}")
+    private String serverHost;
+
+    public RentalsResponse getRentals(){
+        Iterable<Rental> rentals = this.rentalRepository.findAll();
+        rentals.forEach(rental -> rental.setPicture(this.formatImagePath(rental.getPicture())));
+        Iterable<RentalResponse> rentalResponses = this.modelMapper.map(rentals, new TypeToken<Iterable<RentalResponse>>() {}.getType());
+
+        return new RentalsResponse(rentalResponses);
     }
 
-    public Rental getRental(final Long id){
-        return this.rentalRepository.findById(id).orElse(null);
+    public RentalResponse getRental(final Long id){
+        Rental rental = this.rentalRepository.findById(id).orElse(null);
+        RentalResponse rentalResponse = this.modelMapper.map(rental, RentalResponse.class);
+        String imagePath = this.formatImagePath(rentalResponse.getPicture());
+        rentalResponse.setPicture(imagePath);
+
+        return rentalResponse;
     }
 
-    public SingleMessageResponse create(Rental rental, Authentication principal){
+    public SingleMessageResponse create(CreateRentalDto rentalDto, Authentication principal){
         User authorizedUser = (User) principal.getPrincipal();
         long id = authorizedUser.getId();
-        rental.setOwner_id(id);
+        String imagePath = this.fileStorageService.save(rentalDto.getPicture());
 
+        Rental rental = this.modelMapper.map(rentalDto, Rental.class);
+        rental.setOwner_id(id);
+        rental.setPicture(imagePath);
         this.rentalRepository.save(rental);
 
         return new SingleMessageResponse().setMessage("Rental created");
     }
 
-    public void update(final long id, Rental rental){
+    public SingleMessageResponse update(final long id, UpdateRentalDto rentalDto){
         Rental dbRental = this.rentalRepository.findById(id).orElse(null);
         if (dbRental == null) {
             throw new NotFoundException("");
         }
 
-        dbRental.setName(rental.getName());
-        dbRental.setDescription(rental.getDescription());
-        dbRental.setPrice(rental.getPrice());
-        dbRental.setSurface(rental.getSurface());
-        this.rentalRepository.save(dbRental);
+        Rental rental = this.modelMapper.map(rentalDto, Rental.class);
+        this.rentalRepository.save(rental);
+
+        return new SingleMessageResponse().setMessage("Rental updated");
+    }
+
+    private String getBaseImagePath(){
+        return serverHost + serverPort + contextPath + "/uploads/";
+    }
+
+    private String formatImagePath(String imagePath){
+        return getBaseImagePath() + imagePath;
     }
 }

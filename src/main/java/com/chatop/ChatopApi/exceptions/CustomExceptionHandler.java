@@ -30,4 +30,9 @@ public class CustomExceptionHandler {
         response.setMessage("error");
         return new ResponseEntity<>( response,HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(FileNameException.class)
+    public ResponseEntity<BadRequestResponse> handleFileNameExceptions(FileNameException exception){
+        return new ResponseEntity<BadRequestResponse>(new BadRequestResponse(), HttpStatus.BAD_REQUEST);
+    }
 }

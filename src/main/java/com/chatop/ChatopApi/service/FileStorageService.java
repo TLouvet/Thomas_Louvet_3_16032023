@@ -1,5 +1,6 @@
 package com.chatop.ChatopApi.service;
 
+import com.chatop.ChatopApi.exceptions.FileNameException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -22,17 +23,26 @@ public class FileStorageService {
         }
     }
 
-    public void save(MultipartFile file){
+    public String save(MultipartFile file){
         try {
-            Files.copy(file.getInputStream(), this.root.resolve(Objects.requireNonNull(file.getOriginalFilename())));
-        } catch (Exception e){
-            if (e instanceof FileAlreadyExistsException) {
-                throw new RuntimeException("A file of that name already exists.");
-            }
-
+            String recordedFilename = this.formatFileName(file);
+            Files.copy(file.getInputStream(), this.root.resolve(Objects.requireNonNull(recordedFilename)));
+            return recordedFilename;
+        } catch (FileAlreadyExistsException e){
+            throw new RuntimeException("A file of that name already exists.");
+        } catch (Exception e ){
             throw new RuntimeException(e.getMessage());
         }
     }
 
+    private String formatFileName(MultipartFile file) throws FileNameException {
+        long currentDate = System.currentTimeMillis();
+        String filename = file.getOriginalFilename();
+        if (filename == null || filename.isEmpty()){
+            throw new FileNameException("Filename can't be null or empty");
+        }
 
+        int indexOfExtension = filename.lastIndexOf(".");
+        return filename.substring(0, indexOfExtension) + currentDate + filename.substring(indexOfExtension);
+    }
 }

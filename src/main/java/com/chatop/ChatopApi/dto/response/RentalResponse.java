@@ -11,9 +11,9 @@ public class RentalResponse {
 
     private String name;
 
-    private String surface;
+    private double surface;
 
-    private String price;
+    private double price;
 
     private String picture;
 

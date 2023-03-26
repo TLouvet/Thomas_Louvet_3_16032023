@@ -8,9 +8,9 @@ public class CreateRentalDto {
 
     private String name;
 
-    private String surface;
+    private double surface;
 
-    private String price;
+    private double price;
 
     private MultipartFile picture;
 

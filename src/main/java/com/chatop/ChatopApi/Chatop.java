@@ -9,9 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 // TODO - Connect LocalHost - il faudra très certainement voir pour ne pas avoir d'erreur CORS
-// TODO - Exporter le secret jwt
-// TODO - Mettre un peu de variable d'environnement parce que là c'est codé en dur
-// TODO - Pour le record => JwtProvider / FileStorageService
+// Refactor le rental post
 
 @SpringBootApplication
 public class Chatop implements CommandLineRunner {

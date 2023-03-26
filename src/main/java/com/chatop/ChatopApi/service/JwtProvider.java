@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.chatop.ChatopApi.dto.response.JwtResponse;
 import com.chatop.ChatopApi.model.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -12,9 +13,8 @@ import java.util.Date;
 @Service
 public class JwtProvider {
 
-    private final String secretKey = "U2VjcmV0QXBpS2V5VGhhdE5vT25lU2hvdWxkRXZlckZpbmQ=";
-
-    private final Algorithm algorithm = Algorithm.HMAC256(secretKey);
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     public JwtResponse provideJwt(User user){
         JwtResponse jwtResponse = new JwtResponse();
@@ -25,21 +25,19 @@ public class JwtProvider {
     }
 
     public String encodeJwt(User user) {
-        int duration = 60 * 60 * 1000;
-        Date expirationDate = new Date(System.currentTimeMillis() + duration);
+        final int TOKEN_DURATION = 60 * 60 * 1000;
+        Date expirationDate = new Date(System.currentTimeMillis() + TOKEN_DURATION);
 
         return JWT.create()
                 .withSubject(user.getId().toString())
-                .withClaim("email", user.getEmail())
-                .withClaim("name", user.getName())
                 .withIssuedAt(new Date(System.currentTimeMillis()))
                 .withExpiresAt(expirationDate)
-                .sign(algorithm);
+                .sign(getAlgorithm());
     }
 
     public DecodedJWT decodeJwt(String token){
         return JWT
-                .require(algorithm)
+                .require(getAlgorithm())
                 .build()
                 .verify(token);
     }
@@ -47,5 +45,9 @@ public class JwtProvider {
     public Long getSubject(DecodedJWT decodedJwt){
         String sub = decodedJwt.getSubject();
         return Long.parseLong(sub);
+    }
+
+    private Algorithm getAlgorithm(){
+        return Algorithm.HMAC256(jwtSecret);
     }
 }

@@ -1,15 +1,17 @@
 package com.chatop.ChatopApi.service;
 
 import com.chatop.ChatopApi.dto.request.LoginDto;
+import com.chatop.ChatopApi.dto.request.RegisterUserDto;
+import com.chatop.ChatopApi.dto.response.JwtResponse;
+import com.chatop.ChatopApi.dto.response.UserResponseDto;
 import com.chatop.ChatopApi.model.User;
 import com.chatop.ChatopApi.repository.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -20,14 +22,23 @@ public class AuthService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public User register(User user){
-        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
+    @Autowired
+    private ModelMapper modelMapper;
 
-        return this.userRepository.save(user);
+    @Autowired
+    private JwtProvider jwtProvider;
+
+    public JwtResponse register(RegisterUserDto userDto){
+        String encodedPassword = bCryptPasswordEncoder.encode(userDto.getPassword());
+        userDto.setPassword(encodedPassword);
+
+        User user = this.modelMapper.map(userDto, User.class);
+        User savedUser = this.userRepository.save(user);
+
+        return this.jwtProvider.provideJwt(savedUser);
     }
 
-    public User login(LoginDto loginDto) {
+    public JwtResponse login(LoginDto loginDto) {
         String email = loginDto.getEmail();
         String rawPassword = loginDto.getPassword();
         User user = this.userRepository.findByEmail(email);
@@ -36,18 +47,18 @@ public class AuthService {
             throw new BadCredentialsException("");
         }
 
-        return user;
+        return this.jwtProvider.provideJwt(user);
     }
 
-    public User me(Authentication principal){
+    public UserResponseDto me(Authentication principal){
         User authorizedUser = (User) principal.getPrincipal();
         long id = authorizedUser.getId();
-        Optional<User> optUser = this.userRepository.findById(id);
-
-        return optUser.orElse(null);
+        User user = this.userRepository.findById(id).orElse(null);
+        return this.modelMapper.map(user, UserResponseDto.class);
     }
 
     private boolean isUserValid(User user, String rawPassword){
         return user != null && bCryptPasswordEncoder.matches(rawPassword, user.getPassword());
     }
+
 }
