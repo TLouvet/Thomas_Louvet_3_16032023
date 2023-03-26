@@ -2,11 +2,11 @@
 
 ## Project Requirements
 
-NodeJS v16+
-Angular CLI v14+
-Java 17+
-MySQL v8.0
-Maven (installed on your system or available with your IDE)
+- NodeJS v16+
+- Angular CLI v14+
+- Java 17+
+- MySQL v8.0
+- Maven (installed on your system or available with your IDE)
 
 ## Get the project
 
