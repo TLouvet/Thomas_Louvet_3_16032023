@@ -25,7 +25,9 @@ Use the command `SOURCE </absolute/path/to/script>`
 ## Setup the backend
 
 Create a file named application.properties in the /backend/src/main/resources folder.
-Fill it with the variables existing on the application.example.properties and your custom values
+Fill it with the variables existing on the application.example.properties and your custom values.
+Please note that by default the frontend will call the backend at port 3001 and use /api as context path.
+If developping on localhost, your server.host will be "http://localhost:"
 
 With maven, compile and run the project : `mvn compile` and `mvn spring-boot:run`
 
@@ -34,10 +36,6 @@ A message is displayed at the end of the loading time: "App started with success
 ## Setup the frontend
 
 From the frontend folder, execute `npm install` in the terminal, once finished start the project with `npm run start`. 
-
-## Frontend environment
-
-By default the frontend will call the backend at port 3001, if needed change the environment file to match your server.port of the application.properties file.
 
 ## Swagger UI
 
