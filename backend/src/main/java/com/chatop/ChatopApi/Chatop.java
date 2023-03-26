@@ -8,9 +8,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-// TODO - Connect LocalHost - il faudra très certainement voir pour ne pas avoir d'erreur CORS
-// Refactor le rental post
-
 @SpringBootApplication
 public class Chatop implements CommandLineRunner {
 

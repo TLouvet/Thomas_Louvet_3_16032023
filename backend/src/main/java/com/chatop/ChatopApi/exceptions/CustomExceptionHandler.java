@@ -33,6 +33,6 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(FileNameException.class)
     public ResponseEntity<BadRequestResponse> handleFileNameExceptions(FileNameException exception){
-        return new ResponseEntity<BadRequestResponse>(new BadRequestResponse(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new BadRequestResponse(), HttpStatus.BAD_REQUEST);
     }
 }
